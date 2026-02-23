@@ -1,228 +1,455 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Image Converter & Compressor</title>
-
-    <!-- jsPDF -->
+    <title>Premium Image Converter & Compressor</title>
+    
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF Library for PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <!-- Cropper -->
+    <!-- Cropper.js Library for Cropping & Rotating -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
     <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary: #10B981;
+            --secondary-hover: #059669;
+            --warning: #F59E0B;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
         }
+
         .container {
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        h2 { text-align: center; }
-
-        .section {
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed #ccc;
         }
 
-        .drop-zone {
-            border: 2px dashed #007bff;
-            padding: 25px;
+        .header {
             text-align: center;
-            cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            color: #007bff;
+            margin-bottom: 30px;
         }
 
-        .preview-container {
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #6B7280;
+            font-size: 14px;
+            margin-top: 0;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            color: #374151;
+            font-size: 18px;
+        }
+
+        /* Drag & Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--primary);
+            background-color: #EEF2FF;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            background-color: #E0E7FF;
+            transform: scale(1.01);
+        }
+        .drop-zone i {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        /* Image Editor Container */
+        .editor-container {
+            display: none;
+            margin-top: 20px;
+        }
+        .img-preview-box {
+            max-width: 100%;
+            height: 300px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .img-preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* Toolbar / Buttons */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+            color: white;
+            min-width: 120px;
+        }
+        .btn-primary { background-color: var(--primary); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: var(--secondary); }
+        .btn-secondary:hover { background-color: var(--secondary-hover); }
+        .btn-tool { background-color: var(--warning); color: #fff;}
+        .btn-tool:hover { background-color: #D97706; }
+
+        /* Controls */
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4B5563;
+            font-size: 14px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--primary);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        /* Size Info */
+        .size-badge {
+            display: flex;
+            justify-content: space-between;
+            background: #F3F4F6;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 15px;
+            border: 1px solid #E5E7EB;
+        }
+        .size-badge strong { color: var(--primary); }
+
+        /* PDF Previews */
+        .pdf-preview-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            justify-content: center;
-            margin-bottom: 15px;
+            margin-top: 15px;
         }
-
-        .preview-img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 5px;
-        }
-
-        .pdf-thumbnail {
-            width: 80px;
-            height: 80px;
+        .pdf-thumb {
+            width: 70px;
+            height: 70px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        input[type="range"] {
-            width: 100%;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            background: #007bff;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
+        @media (max-width: 600px) {
+            .btn { width: 100%; flex: unset; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Advanced Image Tools</h2>
-
-    <!-- Section 1 -->
-    <div class="section">
-        <h3>Image to JPG, Crop & Compress</h3>
-
-        <div class="drop-zone" onclick="document.getElementById('compressInput').click()">
-            এখানে ছবি ক্লিক করে সিলেক্ট করুন
-        </div>
-        <input type="file" id="compressInput" accept="image/*" hidden>
-
-        <div class="preview-container" id="preview1"></div>
-
-        <button class="btn" onclick="compressImage()">Convert & Download JPG</button>
+    <div class="header">
+        <h1><i class="fa-solid fa-wand-magic-sparkles"></i> Image Studio Tools</h1>
+        <p>Premium Image Compressor, Editor & PDF Converter</p>
     </div>
 
-    <!-- Section 2 -->
-    <div class="section">
-        <h3>Multiple Images to PDF</h3>
+    <!-- Section 1: Edit, Compress & JPG Converter -->
+    <div class="card">
+        <h3><i class="fa-regular fa-image"></i> ১. Image Editor & Compressor</h3>
+        
+        <div class="drop-zone" id="drop-zone-1" onclick="document.getElementById('imgInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i><br>
+            ছবি আপলোড করতে ক্লিক করুন অথবা টেনে আনুন
+        </div>
+        <input type="file" id="imgInput" accept="image/*" hidden>
 
-        <div class="drop-zone" onclick="document.getElementById('pdfInput').click()">
+        <!-- Editor Controls (Hidden initially) -->
+        <div class="editor-container" id="editor-container">
+            <div class="img-preview-box">
+                <img id="image-preview" src="" alt="Preview">
+            </div>
+
+            <div class="toolbar">
+                <button class="btn btn-tool" onclick="rotateImage(-90)"><i class="fa-solid fa-rotate-left"></i> বামে ঘোরান</button>
+                <button class="btn btn-tool" onclick="rotateImage(90)"><i class="fa-solid fa-rotate-right"></i> ডানে ঘোরান</button>
+                <button class="btn btn-tool" onclick="resetCrop()"><i class="fa-solid fa-crop-simple"></i> ক্রপ রিসেট</button>
+            </div>
+
+            <div class="control-group">
+                <label><i class="fa-solid fa-pen-nib"></i> ওয়াটারমার্ক (টেক্সট লিখুন বা ফাঁকা রাখুন):</label>
+                <input type="text" id="watermarkText" placeholder="যেমন: My Website Name" title="ওয়াটারমার্ক সরাতে লেখা মুছে ফেলুন">
+            </div>
+
+            <div class="control-group">
+                <label><i class="fa-solid fa-compress"></i> কোয়ালিটি / সাইজ কমান: <span id="qualityVal" style="color:var(--primary); font-weight:bold;">80</span>%</label>
+                <input type="range" id="qualityInput" min="5" max="100" value="80" oninput="document.getElementById('qualityVal').innerText = this.value">
+            </div>
+
+            <button class="btn btn-primary" onclick="processAndDownload()"><i class="fa-solid fa-download"></i> কনভার্ট ও ডাউনলোড (JPG)</button>
+
+            <div class="size-badge" id="size-badge" style="display:none;">
+                <span>আগের সাইজ: <strong id="old-size">0 KB</strong></span>
+                <span>নতুন সাইজ: <strong id="new-size" style="color:var(--secondary);">হিসাব হচ্ছে...</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Multiple Images to PDF -->
+    <div class="card">
+        <h3><i class="fa-solid fa-file-pdf"></i> ২. Multiple Images to PDF</h3>
+        
+        <div class="drop-zone" id="drop-zone-2" onclick="document.getElementById('pdfInput').click()">
+            <i class="fa-solid fa-images"></i><br>
             একাধিক ছবি সিলেক্ট করুন
         </div>
         <input type="file" id="pdfInput" accept="image/*" multiple hidden>
-
-        <div class="preview-container" id="preview2"></div>
-
-        <button class="btn" onclick="convertToPDF()">Download PDF</button>
+        
+        <div class="pdf-preview-container" id="pdf-preview-container"></div>
+        
+        <button class="btn btn-secondary" style="margin-top:15px; width:100%;" onclick="convertToPDF()">
+            <i class="fa-solid fa-file-export"></i> PDF ডাউনলোড করুন
+        </button>
     </div>
 </div>
 
 <script>
-let selectedImage = null;
-
-document.getElementById("compressInput").addEventListener("change", function(e){
-    const file = e.target.files[0];
-    if(!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event){
-        selectedImage = event.target.result;
-        document.getElementById("preview1").innerHTML =
-            `<img src="${selectedImage}" class="preview-img">`;
-    };
-    reader.readAsDataURL(file);
-});
-
-function compressImage(){
-    if(!selectedImage) {
-        alert("প্রথমে ছবি সিলেক্ট করুন");
-        return;
+    // --- Utility: Format File Size ---
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024, sizes = ['Bytes', 'KB', 'MB'], i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    const img = new Image();
-    img.src = selectedImage;
-    img.onload = function(){
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
+    // --- Section 1: Advanced Image Editor (Crop, Rotate, Watermark, Compress) ---
+    const dropZone1 = document.getElementById('drop-zone-1');
+    const imgInput = document.getElementById('imgInput');
+    const editorContainer = document.getElementById('editor-container');
+    const imagePreview = document.getElementById('image-preview');
+    let cropper = null;
+    let originalFileName = "image";
 
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    dropZone1.addEventListener('dragover', e => { e.preventDefault(); dropZone1.classList.add('dragover'); });
+    dropZone1.addEventListener('dragleave', () => dropZone1.classList.remove('dragover'));
+    dropZone1.addEventListener('drop', e => { e.preventDefault(); dropZone1.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+    imgInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = "compressed.jpg";
-        link.click();
-    };
-}
+    function handleFile(file) {
+        if (!file) return;
+        originalFileName = file.name.split('.')[0];
+        document.getElementById('old-size').innerText = formatBytes(file.size);
+        document.getElementById('size-badge').style.display = 'flex';
+        document.getElementById('new-size').innerText = "ডাউনলোড করলে দেখাবে";
 
-/* PDF Section */
-let pdfFiles = [];
-
-document.getElementById("pdfInput").addEventListener("change", function(e){
-    pdfFiles = Array.from(e.target.files);
-    const preview = document.getElementById("preview2");
-    preview.innerHTML = "";
-
-    pdfFiles.forEach(file=>{
         const reader = new FileReader();
-        reader.onload = function(event){
-            preview.innerHTML +=
-                `<img src="${event.target.result}" class="pdf-thumbnail">`;
+        reader.onload = (e) => {
+            editorContainer.style.display = 'block';
+            imagePreview.src = e.target.result;
+            
+            // Initialize or replace Cropper.js
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(imagePreview, {
+                viewMode: 1,
+                autoCropArea: 1, // Select full image initially
+                background: false
+            });
         };
         reader.readAsDataURL(file);
-    });
-});
-
-async function convertToPDF(){
-    if(pdfFiles.length === 0){
-        alert("ছবি সিলেক্ট করুন");
-        return;
     }
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-
-    for(let i=0;i<pdfFiles.length;i++){
-        const dataUrl = await readFile(pdfFiles[i]);
-        const img = await loadImg(dataUrl);
-
-        const width = pdf.internal.pageSize.getWidth();
-        const height = (img.height * width) / img.width;
-
-        if(i>0) pdf.addPage();
-        pdf.addImage(img, 'JPEG', 0, 0, width, height);
+    function rotateImage(degree) {
+        if (cropper) cropper.rotate(degree);
     }
 
-    pdf.save("document.pdf");
-}
+    function resetCrop() {
+        if (cropper) cropper.reset();
+    }
 
-function readFile(file){
-    return new Promise(resolve=>{
-        const reader = new FileReader();
-        reader.onload = e=>resolve(e.target.result);
-        reader.readAsDataURL(file);
-    });
-}
+    function processAndDownload() {
+        if (!cropper) return alert("প্রথমে একটি ছবি আপলোড করুন!");
 
-function loadImg(src){
-    return new Promise(resolve=>{
-        const img = new Image();
-        img.onload = ()=>resolve(img);
-        img.src = src;
-    });
-}
+        const qualityValue = document.getElementById('qualityInput').value / 100;
+        const watermarkText = document.getElementById('watermarkText').value.trim();
+
+        // 1. Get cropped & rotated canvas
+        let canvas = cropper.getCroppedCanvas({ fillColor: '#FFFFFF' }); // White background for transparent PNGs
+        let ctx = canvas.getContext('2d');
+
+        // 2. Add Watermark if text exists
+        if (watermarkText !== "") {
+            const fontSize = Math.max(20, canvas.width / 15); // Auto-scale font size
+            ctx.font = `bold ${fontSize}px Poppins, Arial`;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)"; // Semi-transparent white
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            // Add a slight dark stroke to make text visible on both dark & light images
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.lineWidth = fontSize / 15;
+
+            // Place watermark diagonally in the center
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 4); // 45 degree angle
+            ctx.strokeText(watermarkText, 0, 0);
+            ctx.fillText(watermarkText, 0, 0);
+            
+            // Reset transforms
+            ctx.rotate(Math.PI / 4);
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+
+        // 3. Compress & Convert to JPG
+        const dataUrl = canvas.toDataURL('image/jpeg', qualityValue);
+
+        // 4. Calculate New Size
+        const base64str = dataUrl.split('base64,')[1];
+        const decodedSize = Math.round((base64str.length * 3) / 4);
+        document.getElementById('new-size').innerText = formatBytes(decodedSize);
+
+        // 5. Trigger Download
+        const link = document.createElement('a');
+        link.download = `${originalFileName}_compressed.jpg`;
+        link.href = dataUrl;
+        link.click();
+
+        // Show success alert
+        alert("✅ ছবি সফলভাবে কনভার্ট ও ডাউনলোড হয়েছে!");
+    }
+
+    // --- Section 2: Multiple Images to PDF ---
+    const dropZone2 = document.getElementById('drop-zone-2');
+    const pdfInput = document.getElementById('pdfInput');
+    const pdfPreviewContainer = document.getElementById('pdf-preview-container');
+    let pdfFiles = [];
+
+    dropZone2.addEventListener('dragover', e => { e.preventDefault(); dropZone2.classList.add('dragover'); });
+    dropZone2.addEventListener('dragleave', () => dropZone2.classList.remove('dragover'));
+    dropZone2.addEventListener('drop', e => { e.preventDefault(); dropZone2.classList.remove('dragover'); handlePDFFiles(e.dataTransfer.files); });
+    pdfInput.addEventListener('change', e => handlePDFFiles(e.target.files));
+
+    function handlePDFFiles(files) {
+        pdfFiles = Array.from(files);
+        pdfPreviewContainer.innerHTML = ''; 
+        
+        pdfFiles.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'pdf-thumb';
+                pdfPreviewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function convertToPDF() {
+        if (pdfFiles.length === 0) return alert("PDF করার জন্য অন্তত একটি ছবি সিলেক্ট করুন!");
+        
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        for (let i = 0; i < pdfFiles.length; i++) {
+            const dataUrl = await new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.readAsDataURL(pdfFiles[i]);
+            });
+            
+            const img = await new Promise(resolve => {
+                const iElement = new Image();
+                iElement.onload = () => resolve(iElement);
+                iElement.src = dataUrl;
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (img.height * pdfWidth) / img.width;
+
+            if (i > 0) pdf.addPage();
+            pdf.addImage(img, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        }
+
+        pdf.save(`Document_${Date.now()}.pdf`);
+        alert("✅ PDF সফলভাবে তৈরি হয়েছে!");
+        pdfPreviewContainer.innerHTML = '';
+        pdfFiles = [];
+    }
 </script>
 
 </body>
-</html>!DOCTYPE html>
+</html><!DOCTYPE html>
 
 <html>
 <head>
