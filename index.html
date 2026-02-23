@@ -1,413 +1,320 @@
 <!DOCTYPE html>
-<html lang="bn" class="light">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Image Studio | Convert & Compress</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Tailwind CSS (For Professional UI) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { primary: '#4F46E5', secondary: '#10B981', danger: '#EF4444' }
-                }
-            }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rashid Editor - Free Online Image Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- jsPDF Library for PDF support -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- SweetAlert2 (For Professional Popups) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins', sans-serif;
+}
+body{
+  background:#f4f6fb;
+  color:#333;
+  scroll-behavior: smooth;
+}
+header{
+  background:#6c63ff;
+  color:white;
+  padding:15px 8%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index: 1000;
+}
+header h2{ font-weight:600; cursor: pointer;}
+nav a{
+  color:white;
+  margin-left:20px;
+  text-decoration:none;
+  font-weight:400;
+}
 
-    <!-- jsPDF & Cropper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+/* Hero Section */
+.hero{
+  text-align:center;
+  padding:80px 20px;
+  background:linear-gradient(135deg,#6c63ff,#4b47d1);
+  color:white;
+}
+.hero h1{ font-size:40px; margin-bottom:20px; }
+.hero p{ margin-bottom:30px; font-size:18px; }
+.hero .upload-btn {
+  padding:15px 35px;
+  border:none;
+  background:white;
+  color:#6c63ff;
+  font-size:18px;
+  border-radius:30px;
+  cursor:pointer;
+  font-weight:600;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: 0.3s;
+}
+.hero .upload-btn:hover { transform: scale(1.05); }
 
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        
-        .cropper-view-box, .cropper-face { border-radius: 4px; }
-        .drop-zone { transition: all 0.3s ease; }
-        .drop-zone.dragover { background-color: rgba(79, 70, 229, 0.1); border-color: #4F46E5; transform: scale(1.02); }
-        
-        /* Smooth Tab Transition */
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+/* Editor Section (Hidden by default) */
+#editor-section {
+  display: none;
+  background: white;
+  margin: -50px 8% 40px 8%;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+@media(max-width: 768px) { .editor-grid { grid-template-columns: 1fr; } }
+
+.canvas-container { text-align: center; }
+canvas { max-width: 100%; border-radius: 10px; border: 1px solid #ddd; background: #eee; }
+
+.controls-panel { background: #f9f9f9; padding: 20px; border-radius: 12px; }
+.control-group { margin-bottom: 15px; }
+.control-group label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: 600; }
+.control-group input, .control-group select {
+  width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;
+}
+.live-info {
+  background: #6c63ff; color: white; padding: 10px; border-radius: 8px;
+  margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 13px;
+}
+
+.action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.btn {
+  padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; color: white;
+}
+.btn-primary { background: #6c63ff; }
+.btn-pdf { background: #e74c3c; }
+.btn-download { background: #27ae60; width: 100%; margin-top: 10px; }
+
+/* Existing Tools Section */
+.section{ padding:60px 8%; }
+.section h2{ text-align:center; margin-bottom:40px; font-size:28px; }
+.tools{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px;
+}
+.card{
+  background:white; padding:25px; border-radius:12px; text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05); transition:0.3s;
+}
+.card:hover{ transform:translateY(-5px); }
+.card h3{ margin:15px 0; }
+.card button{
+  margin-top:10px; padding:8px 18px; border:none; background:#6c63ff; color:white; border-radius:20px; cursor:pointer;
+}
+
+footer{ background:#111; color:white; text-align:center; padding:20px; margin-top:40px; }
+</style>
 </head>
-<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col">
+<body>
 
-    <!-- Navbar -->
-    <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2 text-xl font-bold text-primary">
-                <i class="fa-solid fa-layer-group"></i> Pro Image Studio
-            </div>
-            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Toggle Dark Mode">
-                <i id="theme-icon" class="fa-solid fa-moon text-gray-600 dark:text-gray-300 text-lg"></i>
-            </button>
-        </div>
-    </nav>
+<header>
+  <h2 onclick="location.reload()">Rashid Editor</h2>
+  <nav>
+    <a href="#popular-tools">Image Tools</a>
+    <a href="#" onclick="alert('PDF Tools integrated below!')">PDF Tools</a>
+  </nav>
+</header>
 
-    <!-- Main Content -->
-    <div class="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
-        
-        <!-- Welcome Header -->
-        <div class="text-center space-y-2 mb-8">
-            <h1 class="text-3xl font-bold">আপনার প্রোডাক্টিভিটি বাড়ান</h1>
-            <p class="text-gray-500 dark:text-gray-400">আপনি কোন টুলটি ব্যবহার করতে চান তা নির্বাচন করুন।</p>
-        </div>
+<!-- Hero Section -->
+<section class="hero">
+  <h1>Free Online Image Compressor & Editor</h1>
+  <p>Compress, Resize, Convert & Edit Images — 100% Free, No Login Required.</p>
+  <button class="upload-btn" onclick="document.getElementById('fileInput').click()">📁 Upload Image</button>
+  <input type="file" id="fileInput" accept="image/*" hidden>
+</section>
 
-        <!-- Tab Menu Buttons -->
-        <div class="flex justify-center gap-4 mb-8">
-            <button id="tab-editor" onclick="switchTab('editor')" class="px-6 py-2.5 rounded-full font-semibold transition-all shadow-md bg-primary text-white flex items-center gap-2">
-                <i class="fa-solid fa-image"></i> Image Tools
-            </button>
-            <button id="tab-pdf" onclick="switchTab('pdf')" class="px-6 py-2.5 rounded-full font-semibold transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                <i class="fa-solid fa-file-pdf"></i> PDF Tools
-            </button>
-        </div>
+<!-- Working Editor Section (Shows when image is uploaded) -->
+<section id="editor-section">
+  <div class="live-info">
+    <span id="origSize">Original: 0 KB</span>
+    <span id="liveSize">New: 0 KB</span>
+  </div>
 
-        <!-- Section 1: Image Editor & Compressor -->
-        <div id="section-editor" class="fade-in bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
-            <h2 class="text-xl font-semibold mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                <i class="fa-solid fa-wand-magic-sparkles text-primary mr-2"></i> Image Editor & Compressor
-            </h2>
-            
-            <div id="drop-zone-1" onclick="document.getElementById('imgInput').click()" class="drop-zone border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                <i class="fa-solid fa-cloud-arrow-up text-4xl text-primary mb-3"></i>
-                <p class="font-medium text-lg">ছবি সিলেক্ট করুন বা টেনে আনুন</p>
-                <p class="text-sm text-gray-500 mt-1">Supports: JPG, PNG, WEBP</p>
-            </div>
-            <input type="file" id="imgInput" accept="image/*" hidden>
-
-            <!-- Editor Workspace -->
-            <div id="editor-container" class="hidden mt-6 space-y-5">
-                <div class="w-full h-80 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden flex justify-center items-center border border-gray-200 dark:border-gray-700">
-                    <img id="image-preview" src="" alt="Preview" class="max-h-full max-w-full">
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <button onclick="rotateImage(-90)" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg font-medium transition"><i class="fa-solid fa-rotate-left"></i> বামে ঘোরান</button>
-                    <button onclick="rotateImage(90)" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg font-medium transition"><i class="fa-solid fa-rotate-right"></i> ডানে ঘোরান</button>
-                    <button onclick="resetCrop()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg font-medium transition"><i class="fa-solid fa-crop"></i> রিসেট</button>
-                    <select id="outputFormat" onchange="updateLiveSize()" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:border-primary">
-                        <option value="jpeg">Convert to JPG</option>
-                        <option value="png">Convert to PNG</option>
-                        <option value="webp">Convert to WEBP</option>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2"><i class="fa-solid fa-pen-nib text-primary"></i> ওয়াটারমার্ক (টেক্সট):</label>
-                        <input type="text" id="watermarkText" placeholder="যেমন: @MyStudio" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary outline-none transition">
-                    </div>
-                    <div>
-                        <!-- oninput updates the text, onchange triggers recalculation when slider is released -->
-                        <label class="block text-sm font-semibold mb-2"><i class="fa-solid fa-compress text-primary"></i> কোয়ালিটি: <span id="qualityVal" class="text-primary font-bold">80</span>%</label>
-                        <input type="range" id="qualityInput" min="5" max="100" value="80" 
-                               oninput="document.getElementById('qualityVal').innerText = this.value" 
-                               onchange="updateLiveSize()" 
-                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary mt-2">
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
-                    <div class="text-sm w-full md:w-auto text-center md:text-left">
-                        <p>আগের সাইজ: <strong id="old-size" class="text-gray-700 dark:text-gray-300">0 KB</strong></p>
-                        <p>নতুন সাইজ: <strong id="new-size" class="text-secondary">হিসাব হচ্ছে...</strong></p>
-                    </div>
-                    <button onclick="processAndDownload()" class="w-full md:w-auto bg-primary hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-primary/30 transition-all flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-download"></i> ডাউনলোড করুন
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 2: Multiple Images to PDF -->
-        <div id="section-pdf" class="fade-in hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
-            <h2 class="text-xl font-semibold mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                <i class="fa-solid fa-file-pdf text-danger mr-2"></i> Images to PDF Converter
-            </h2>
-            
-            <div id="drop-zone-2" onclick="document.getElementById('pdfInput').click()" class="drop-zone border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                <i class="fa-regular fa-images text-4xl text-danger mb-3"></i>
-                <p class="font-medium text-lg">একাধিক ছবি সিলেক্ট করুন</p>
-                <p class="text-sm text-gray-500 mt-1">সব ছবি একটি PDF-এ যুক্ত হবে</p>
-            </div>
-            <input type="file" id="pdfInput" accept="image/*" multiple hidden>
-            
-            <!-- PDF Preview Grid -->
-            <div id="pdf-preview-container" class="grid grid-cols-3 md:grid-cols-5 gap-4 mt-6"></div>
-            
-            <button id="pdfBtn" onclick="convertToPDF()" class="hidden mt-6 w-full bg-danger hover:bg-red-600 text-white font-semibold py-3 px-8 rounded-xl shadow-lg hover:shadow-red-500/30 transition-all flex justify-center items-center gap-2">
-                <i class="fa-solid fa-file-export"></i> PDF তৈরি করুন
-            </button>
-        </div>
-
+  <div class="editor-grid">
+    <div class="canvas-container">
+      <canvas id="mainCanvas"></canvas>
+      <button class="btn btn-download" onclick="downloadImage()">⬇️ Download Image</button>
     </div>
 
-    <!-- Footer -->
-    <footer class="text-center py-6 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
-        &copy; 2024 Pro Image Studio. Built with ❤️ for professionals.
-    </footer>
+    <div class="controls-panel">
+      <div class="control-group">
+        <label>Quality (<span id="qPercent">80</span>%)</label>
+        <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.8">
+      </div>
+      <div class="control-group">
+        <label>Width (px)</label>
+        <input type="number" id="widthInput">
+      </div>
+      <div class="control-group">
+        <label>Height (px)</label>
+        <input type="number" id="heightInput">
+      </div>
+      <div class="control-group">
+        <label>Convert Format</label>
+        <select id="format">
+          <option value="image/jpeg">JPEG</option>
+          <option value="image/png">PNG</option>
+          <option value="image/webp">WEBP</option>
+        </select>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="applyChanges()">📏 Apply Changes</button>
+        <button class="btn btn-pdf" onclick="saveAsPDF()">📄 Save as PDF</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="popular-tools">
+  <h2>Popular Tools</h2>
+  <div class="tools">
+    <div class="card">
+      <h3>Image Compressor</h3>
+      <p>Reduce image size without losing quality.</p>
+      <button onclick="scrollToUpload()">Use Now</button>
+    </div>
+    <div class="card">
+      <h3>Resize Image</h3>
+      <p>Change image dimensions easily.</p>
+      <button onclick="scrollToUpload()">Use Now</button>
+    </div>
+    <div class="card">
+      <h3>Convert Image</h3>
+      <p>Convert JPG, PNG, WEBP formats.</p>
+      <button onclick="scrollToUpload()">Use Now</button>
+    </div>
+    <div class="card">
+      <h3>Image to PDF</h3>
+      <p>Convert images into PDF file.</p>
+      <button onclick="scrollToUpload()">Use Now</button>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Why Choose Us</h2>
+  <div class="features" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; text-align:center;">
+    <div class="feature" style="background:white; padding:20px; border-radius:10px;">
+      <h3>⚡ Fast Processing</h3>
+      <p>Instant image editing in browser.</p>
+    </div>
+    <div class="feature" style="background:white; padding:20px; border-radius:10px;">
+      <h3>🔒 100% Secure</h3>
+      <p>Your images are not stored.</p>
+    </div>
+    <div class="feature" style="background:white; padding:20px; border-radius:10px;">
+      <h3>💯 Completely Free</h3>
+      <p>No signup required.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Rashid Editor | Designed for Speed & Privacy</p>
+</footer>
 
 <script>
-    // --- Tab Switching Logic ---
-    function switchTab(tabName) {
-        const editorSec = document.getElementById('section-editor');
-        const pdfSec = document.getElementById('section-pdf');
-        const tabEditor = document.getElementById('tab-editor');
-        const tabPdf = document.getElementById('tab-pdf');
+const fileInput = document.getElementById('fileInput');
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+let originalImg = null;
+let fileName = "edited-image";
 
-        const inactiveClass = "px-6 py-2.5 rounded-full font-semibold transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2";
+// File Handle
+fileInput.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-        if (tabName === 'editor') {
-            editorSec.classList.remove('hidden');
-            pdfSec.classList.add('hidden');
-            tabEditor.className = "px-6 py-2.5 rounded-full font-semibold transition-all shadow-md bg-primary text-white flex items-center gap-2";
-            tabPdf.className = inactiveClass;
-        } else {
-            pdfSec.classList.remove('hidden');
-            editorSec.classList.add('hidden');
-            tabPdf.className = "px-6 py-2.5 rounded-full font-semibold transition-all shadow-md bg-danger text-white flex items-center gap-2";
-            tabEditor.className = inactiveClass;
-        }
+  fileName = file.name.split('.')[0];
+  document.getElementById('origSize').innerText = "Original: " + (file.size/1024).toFixed(1) + " KB";
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      originalImg = img;
+      document.getElementById('widthInput').value = img.width;
+      document.getElementById('heightInput').value = img.height;
+      document.getElementById('editor-section').style.display = 'block';
+      applyChanges();
+      window.scrollTo(0, document.getElementById('editor-section').offsetTop - 100);
     }
+    img.src = event.target.result;
+  }
+  reader.readAsDataURL(file);
+});
 
-    // --- Dark Mode Logic ---
-    function toggleDarkMode() {
-        const html = document.documentElement;
-        const icon = document.getElementById('theme-icon');
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            icon.classList.replace('fa-sun', 'fa-moon');
-        } else {
-            html.classList.add('dark');
-            icon.classList.replace('fa-moon', 'fa-sun');
-        }
+// Apply Resize and Image logic
+function applyChanges() {
+  if (!originalImg) return;
+  
+  const w = parseInt(document.getElementById('widthInput').value);
+  const h = parseInt(document.getElementById('heightInput').value);
+  
+  canvas.width = w;
+  canvas.height = h;
+  ctx.drawImage(originalImg, 0, 0, w, h);
+  updateLiveSize();
+}
+
+// Live Size Calculation
+function updateLiveSize() {
+  const quality = parseFloat(document.getElementById('quality').value);
+  const format = document.getElementById('format').value;
+  document.getElementById('qPercent').innerText = Math.round(quality * 100);
+
+  canvas.toBlob((blob) => {
+    if (blob) {
+      document.getElementById('liveSize').innerText = "New: " + (blob.size/1024).toFixed(1) + " KB";
     }
+  }, format, quality);
+}
 
-    // --- Utility: Format File Size ---
-    function formatBytes(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024, sizes = ['Bytes', 'KB', 'MB'], i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
+// Event Listeners for Live Update
+document.getElementById('quality').addEventListener('input', updateLiveSize);
+document.getElementById('format').addEventListener('change', updateLiveSize);
 
-    // --- Section 1: Image Editor Logic ---
-    const dropZone1 = document.getElementById('drop-zone-1');
-    const imgInput = document.getElementById('imgInput');
-    const editorContainer = document.getElementById('editor-container');
-    const imagePreview = document.getElementById('image-preview');
-    let cropper = null;
-    let originalFileName = "image";
+// Download Image
+function downloadImage() {
+  const format = document.getElementById('format').value;
+  const quality = parseFloat(document.getElementById('quality').value);
+  const link = document.createElement('a');
+  link.download = fileName + "_rashid_editor." + format.split('/')[1];
+  link.href = canvas.toDataURL(format, quality);
+  link.click();
+}
 
-    dropZone1.addEventListener('dragover', e => { e.preventDefault(); dropZone1.classList.add('dragover'); });
-    dropZone1.addEventListener('dragleave', () => dropZone1.classList.remove('dragover'));
-    dropZone1.addEventListener('drop', e => { e.preventDefault(); dropZone1.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
-    imgInput.addEventListener('change', e => handleFile(e.target.files[0]));
+// PDF Export
+function saveAsPDF() {
+  const { jsPDF } = window.jspdf;
+  const imgData = canvas.toDataURL("image/jpeg", 1.0);
+  const pdf = new jsPDF({
+    orientation: canvas.width > canvas.height ? "l" : "p",
+    unit: "px",
+    format: [canvas.width, canvas.height]
+  });
+  pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
+  pdf.save(fileName + ".pdf");
+}
 
-    function handleFile(file) {
-        if (!file) return;
-        originalFileName = file.name.split('.')[0];
-        document.getElementById('old-size').innerText = formatBytes(file.size);
-        document.getElementById('new-size').innerText = "হিসাব হচ্ছে...";
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            editorContainer.classList.remove('hidden');
-            imagePreview.src = e.target.result;
-            
-            if (cropper) cropper.destroy();
-            
-            // Initialize Cropper and trigger live size on ready & crop end
-            cropper = new Cropper(imagePreview, { 
-                viewMode: 1, 
-                autoCropArea: 1, 
-                background: false,
-                ready() { updateLiveSize(); },
-                cropend() { updateLiveSize(); } // Updates live size when cropping is finished
-            });
-            
-            editorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // --- LIVE SIZE CALCULATOR ---
-    function updateLiveSize() {
-        if (!cropper) return;
-
-        const qualityValue = document.getElementById('qualityInput').value / 100;
-        const outputFormat = document.getElementById('outputFormat').value;
-
-        // Get cropped canvas
-        let canvas = cropper.getCroppedCanvas({ fillColor: outputFormat === 'png' ? 'transparent' : '#FFFFFF' });
-        if (!canvas) return;
-
-        // Convert to selected format and quality
-        const mimeType = `image/${outputFormat}`;
-        const dataUrl = canvas.toDataURL(mimeType, qualityValue);
-        
-        // Calculate size from Base64 string
-        const base64str = dataUrl.split('base64,')[1];
-        const decodedSize = Math.round((base64str.length * 3) / 4);
-        
-        // Update UI
-        document.getElementById('new-size').innerText = formatBytes(decodedSize);
-    }
-
-    // Actions that trigger size update
-    function rotateImage(degree) { 
-        if (cropper) { cropper.rotate(degree); updateLiveSize(); } 
-    }
-    function resetCrop() { 
-        if (cropper) { cropper.reset(); updateLiveSize(); } 
-    }
-
-    // Process & Download
-    function processAndDownload() {
-        if (!cropper) return Swal.fire('Error!', 'প্রথমে একটি ছবি আপলোড করুন!', 'error');
-
-        const qualityValue = document.getElementById('qualityInput').value / 100;
-        const watermarkText = document.getElementById('watermarkText').value.trim();
-        const outputFormat = document.getElementById('outputFormat').value;
-
-        let canvas = cropper.getCroppedCanvas({ fillColor: outputFormat === 'png' ? 'transparent' : '#FFFFFF' });
-        let ctx = canvas.getContext('2d');
-
-        // Add Watermark if exists
-        if (watermarkText !== "") {
-            const fontSize = Math.max(25, canvas.width / 15);
-            ctx.font = `bold ${fontSize}px Inter, sans-serif`;
-            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
-            ctx.lineWidth = fontSize / 12;
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-Math.PI / 4);
-            ctx.strokeText(watermarkText, 0, 0);
-            ctx.fillText(watermarkText, 0, 0);
-            ctx.rotate(Math.PI / 4);
-            ctx.translate(-canvas.width / 2, -canvas.height / 2);
-        }
-
-        const mimeType = `image/${outputFormat}`;
-        const dataUrl = canvas.toDataURL(mimeType, qualityValue);
-        
-        const link = document.createElement('a');
-        link.download = `${originalFileName}_pro.${outputFormat}`;
-        link.href = dataUrl;
-        link.click();
-
-        Swal.fire({ title: 'সফল হয়েছে!', text: 'আপনার ছবি সফলভাবে ডাউনলোড হয়েছে।', icon: 'success', confirmButtonColor: '#4F46E5' });
-    }
-
-    // --- Section 2: PDF Logic ---
-    const dropZone2 = document.getElementById('drop-zone-2');
-    const pdfInput = document.getElementById('pdfInput');
-    const pdfPreviewContainer = document.getElementById('pdf-preview-container');
-    const pdfBtn = document.getElementById('pdfBtn');
-    let pdfFilesArray = [];
-
-    dropZone2.addEventListener('dragover', e => { e.preventDefault(); dropZone2.classList.add('dragover'); });
-    dropZone2.addEventListener('dragleave', () => dropZone2.classList.remove('dragover'));
-    dropZone2.addEventListener('drop', e => { e.preventDefault(); dropZone2.classList.remove('dragover'); handlePDFFiles(e.dataTransfer.files); });
-    pdfInput.addEventListener('change', e => handlePDFFiles(e.target.files));
-
-    function handlePDFFiles(files) {
-        pdfFilesArray = [...pdfFilesArray, ...Array.from(files)];
-        renderPDFPreviews();
-    }
-
-    function removePDFImage(index) {
-        pdfFilesArray.splice(index, 1);
-        renderPDFPreviews();
-    }
-
-    function renderPDFPreviews() {
-        pdfPreviewContainer.innerHTML = '';
-        if(pdfFilesArray.length > 0) pdfBtn.classList.remove('hidden');
-        else pdfBtn.classList.add('hidden');
-
-        pdfFilesArray.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const div = document.createElement('div');
-                div.className = 'relative group rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 aspect-square';
-                div.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition flex justify-center items-center">
-                        <button onclick="removePDFImage(${index})" class="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition shadow-lg">
-                            <i class="fa-solid fa-trash text-sm"></i>
-                        </button>
-                    </div>
-                `;
-                pdfPreviewContainer.appendChild(div);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    async function convertToPDF() {
-        if (pdfFilesArray.length === 0) return;
-        
-        Swal.fire({ title: 'PDF তৈরি হচ্ছে...', text: 'দয়া করে অপেক্ষা করুন।', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
-        setTimeout(async () => {
-            try {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF();
-
-                for (let i = 0; i < pdfFilesArray.length; i++) {
-                    const dataUrl = await new Promise(resolve => {
-                        const reader = new FileReader();
-                        reader.onload = e => resolve(e.target.result);
-                        reader.readAsDataURL(pdfFilesArray[i]);
-                    });
-                    
-                    const img = await new Promise(resolve => {
-                        const iElement = new Image();
-                        iElement.onload = () => resolve(iElement);
-                        iElement.src = dataUrl;
-                    });
-
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (img.height * pdfWidth) / img.width;
-
-                    if (i > 0) pdf.addPage();
-                    pdf.addImage(img, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                }
-
-                pdf.save(`Pro_Document_${Date.now()}.pdf`);
-                
-                Swal.fire({ title: 'সফল!', text: 'আপনার PDF সফলভাবে তৈরি হয়েছে!', icon: 'success', confirmButtonColor: '#10B981' });
-
-                pdfFilesArray = [];
-                renderPDFPreviews();
-
-            } catch(err) {
-                Swal.fire('Error', 'কোথাও একটা সমস্যা হয়েছে!', 'error');
-            }
-        }, 500);
-    }
+function scrollToUpload() {
+  window.scrollTo(0, 0);
+  alert("Please upload an image first!");
+}
 </script>
 
 </body>
