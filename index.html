@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rashid Editor - Smart Image Tools</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- PDF Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -12,7 +13,6 @@
 *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
 body{ background:#f4f6fb; color:#333; scroll-behavior: smooth; overflow-x: hidden;}
 
-/* --- Scale Animation Helper --- */
 .scale-hover {
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
@@ -44,7 +44,6 @@ header h2:hover { transform: scale(1.1); }
   display: inline-block; transition: 0.3s;
 }
 .upload-btn:hover { transform: scale(1.1); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
-.upload-btn:active { transform: scale(0.95); }
 
 /* --- Editor Section --- */
 #editor-section {
@@ -82,28 +81,19 @@ canvas { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 5px 15
 .btn-pdf { background: #ff4757; }
 .btn-download { background: #2ed573; font-size: 16px; margin-top: 10px; }
 .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
-.btn:active { transform: scale(0.98); }
 
-/* --- Popular Tools with Scale Anime --- */
-.section-title { text-align: center; margin-bottom: 40px; font-size: 32px; font-weight: 600; }
-.tools-container { padding: 60px 8%; }
+/* --- Popular Tools --- */
+.section-title { text-align: center; margin: 40px 0; font-size: 32px; font-weight: 600; }
+.tools-container { padding: 40px 8%; }
 .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; }
 
 .tool-card {
   background: white; padding: 35px 25px; border-radius: 20px; text-align: center;
   box-shadow: 0 10px 20px rgba(0,0,0,0.05); cursor: pointer;
-  border: 1px solid #eee; position: relative; overflow: hidden;
+  border: 1px solid #eee;
 }
 .tool-card h3 { margin: 15px 0 10px; font-size: 22px; color: #6c63ff; }
-.tool-card p { font-size: 14px; color: #777; }
 .tool-card .icon-box { font-size: 40px; margin-bottom: 10px; display: block; }
-
-/* Tool specific accent bar */
-.tool-card::after {
-    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 5px;
-    background: #6c63ff; transform: scaleX(0); transition: 0.3s;
-}
-.tool-card:hover::after { transform: scaleX(1); }
 
 footer{ background:#111; color:white; text-align:center; padding:30px; margin-top:50px; }
 </style>
@@ -112,15 +102,12 @@ footer{ background:#111; color:white; text-align:center; padding:30px; margin-to
 
 <header>
   <h2 onclick="location.reload()">Rashid Editor</h2>
-  <nav>
-    <a href="#popular-tools" style="color:white; text-decoration:none;">Image Tools</a>
-  </nav>
 </header>
 
 <section class="hero">
   <h1>Smart Image Studio 🗂️</h1>
-  <p>Free, Fast & Secure Image Processing in your Browser.</p>
-  <button class="upload-btn" onclick="triggerUpload()">📁 Upload Image to Start</button>
+  <p>Compress, Resize, and Convert Instantly — 100% Secure.</p>
+  <button class="upload-btn" onclick="triggerUpload()">📁 Upload Image</button>
   <input type="file" id="fileInput" accept="image/*" hidden>
 </section>
 
@@ -141,7 +128,7 @@ footer{ background:#111; color:white; text-align:center; padding:30px; margin-to
     <div class="controls-panel">
         <div class="control-group">
             <label>📉 Compression: <span id="qPercent">80</span>%</label>
-            <input type="range" id="quality" min="0.1" max="1" step="0.01" value="0.8">
+            <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.8">
         </div>
         
         <div style="display: flex; gap: 10px;">
@@ -164,43 +151,34 @@ footer{ background:#111; color:white; text-align:center; padding:30px; margin-to
             </select>
         </div>
 
-        <!-- Updated PDF Button -->
         <button class="btn btn-pdf" onclick="saveAsPDF()">🗂️ Export as PDF</button>
-        <p style="text-align:center; font-size:11px; color:#999;">Live preview enabled ⚡</p>
     </div>
   </div>
 </section>
 
-<!-- Tools Section -->
 <section class="tools-container" id="popular-tools">
   <h2 class="section-title">Popular Tools 📏🗂️</h2>
   <div class="tools-grid">
-    
     <div class="tool-card scale-hover" onclick="triggerUpload()">
       <span class="icon-box">📉</span>
       <h3>Compressor</h3>
-      <p>Instant file size reduction with high quality.</p>
+      <p>Instant file size reduction.</p>
     </div>
-
     <div class="tool-card scale-hover" onclick="triggerUpload()">
       <span class="icon-box">📏</span>
-      <h3>Image Resizer</h3>
-      <p>Scale your images to any dimension perfectly.</p>
+      <h3>Resizer</h3>
+      <p>Scale images perfectly.</p>
     </div>
-
     <div class="tool-card scale-hover" onclick="triggerUpload()">
       <span class="icon-box">🔄</span>
       <h3>Converter</h3>
-      <p>Convert JPG, PNG, WEBP instantly.</p>
+      <p>JPG, PNG, WEBP conversion.</p>
     </div>
-
-    <!-- Unique PDF Icon -->
     <div class="tool-card scale-hover" onclick="triggerUpload()">
       <span class="icon-box">🗂️</span>
       <h3>Image to PDF</h3>
-      <p>Compile images into clean, professional PDFs.</p>
+      <p>Save as Document.</p>
     </div>
-
   </div>
 </section>
 
@@ -209,7 +187,6 @@ footer{ background:#111; color:white; text-align:center; padding:30px; margin-to
 </footer>
 
 <script>
-// (জাভাস্ক্রিপ্ট আগের মতই আছে, শুধু আইকন আপডেট হয়েছে)
 const fileInput = document.getElementById('fileInput');
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
@@ -224,7 +201,8 @@ let aspectRatio = 1;
 
 function triggerUpload() { fileInput.click(); }
 
-fileInput.addEventListener('change', function(e) {
+// ১. ফাইল আপলোড হ্যান্ডলার
+fileInput.onchange = function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
@@ -239,57 +217,89 @@ fileInput.addEventListener('change', function(e) {
       aspectRatio = img.width / img.height;
       widthInput.value = img.width;
       heightInput.value = img.height;
+      
       document.getElementById('editor-section').style.display = 'block';
-      processImage();
+      renderCanvas(); // ছবি প্রথমবার ড্র করা
       window.scrollTo({ top: document.getElementById('editor-section').offsetTop - 80, behavior: 'smooth' });
     }
     img.src = event.target.result;
   }
   reader.readAsDataURL(file);
-});
+};
 
-function processImage() {
+// ২. মূল রেন্ডারিং ফাংশন (এটিই সব কাজ করে)
+function renderCanvas() {
     if (!originalImg) return;
+    
     const w = parseInt(widthInput.value) || originalImg.width;
     const h = parseInt(heightInput.value) || originalImg.height;
+    
     canvas.width = w;
     canvas.height = h;
+    
+    ctx.clearRect(0, 0, w, h);
     ctx.drawImage(originalImg, 0, 0, w, h);
+    
     document.getElementById('dimensionInfo').innerText = `📏 ${w} x ${h}`;
     updateLiveFileSize();
 }
 
+// ৩. লাইভ ফাইল সাইজ আপডেট
 function updateLiveFileSize() {
     const quality = parseFloat(qualityInput.value);
     const format = formatInput.value;
     document.getElementById('qPercent').innerText = Math.round(quality * 100);
+
+    // ক্যানভাস থেকে ব্লব তৈরি করে সাইজ মাপা
     canvas.toBlob((blob) => {
-        if (blob) document.getElementById('liveSize').innerText = "New: " + (blob.size/1024).toFixed(1) + " KB";
+        if (blob) {
+            document.getElementById('liveSize').innerText = "New: " + (blob.size/1024).toFixed(1) + " KB";
+        }
     }, format, quality);
 }
 
-qualityInput.addEventListener('input', updateLiveFileSize);
-formatInput.addEventListener('change', processImage);
-widthInput.addEventListener('input', () => { if(originalImg) { heightInput.value = Math.round(widthInput.value / aspectRatio); processImage(); } });
-heightInput.addEventListener('input', () => { if(originalImg) { widthInput.value = Math.round(heightInput.value * aspectRatio); processImage(); } });
+// ৪. ইভেন্ট লিসেনার (সবগুলো লাইভ কাজ করার জন্য)
+qualityInput.oninput = updateLiveFileSize;
+formatInput.onchange = renderCanvas;
 
+widthInput.oninput = function() {
+    if (originalImg) {
+        heightInput.value = Math.round(widthInput.value / aspectRatio);
+        renderCanvas();
+    }
+};
+
+heightInput.oninput = function() {
+    if (originalImg) {
+        widthInput.value = Math.round(heightInput.value * aspectRatio);
+        renderCanvas();
+    }
+};
+
+// ৫. ডাউনলোড ফাংশন
 function downloadImage() {
-  const format = formatInput.value;
-  const link = document.createElement('a');
-  link.download = fileName + "_edited." + format.split('/')[1];
-  link.href = canvas.toDataURL(format, parseFloat(qualityInput.value));
-  link.click();
+    if (!originalImg) return;
+    const format = formatInput.value;
+    const quality = parseFloat(qualityInput.value);
+    
+    const link = document.createElement('a');
+    link.download = `${fileName}_edited.${format.split('/')[1]}`;
+    link.href = canvas.toDataURL(format, quality);
+    link.click();
 }
 
+// ৬. পিডিএফ সেভ ফাংশন
 function saveAsPDF() {
-  const { jsPDF } = window.jspdf;
-  const imgData = canvas.toDataURL("image/jpeg", 1.0);
-  const pdf = new jsPDF({
-    orientation: canvas.width > canvas.height ? "l" : "p",
-    unit: "px", format: [canvas.width, canvas.height]
-  });
-  pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
-  pdf.save(fileName + ".pdf");
+    if (!originalImg) return;
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "l" : "p",
+        unit: "px",
+        format: [canvas.width, canvas.height]
+    });
+    pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
+    pdf.save(fileName + ".pdf");
 }
 </script>
 
