@@ -131,7 +131,7 @@ button {
     gap: 15px;
     margin-top: 20px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
+    flex-wrap: working;
     padding-top: 40px;
     border-top: 1px solid rgba(0, 118, 255, 0.05);
 }
@@ -205,7 +205,10 @@ footer { text-align: center; padding: 60px 20px; color: #86868b; font-size: 14px
             </div>
             <div class="side-panel">
                 <label>Width (px)</label>
-                <input type="number" id="width">
+                <input type="number" id="width" min="1">
+
+                <label>Height (px)</label>
+                <input type="number" id="height" min="1">
 
                 <label>Quality (<span id="qVal">80</span>%)</label>
                 <input type="range" min="0.1" max="1" step="0.05" value="0.8" id="quality" style="width:100%; margin-bottom:20px;">
@@ -258,89 +261,137 @@ footer { text-align: center; padding: 60px 20px; color: #86868b; font-size: 14px
 <footer>© 2026 Hii Studio Premium • Encrypted Local Processing</footer>
 
 <script>
-let img=new Image();
-let canvas=document.getElementById("canvas");
-let ctx=canvas.getContext("2d");
+let img = new Image();
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+let originalRatio = 1;
 
 function openEditor(){
-    document.getElementById("editor").style.display="block";
+    document.getElementById("editor").style.display = "block";
     window.scrollTo({top: document.getElementById("editor").offsetTop - 50, behavior: 'smooth'});
 }
 
-let drop=document.getElementById("drop");
-let fileInput=document.getElementById("file");
-drop.onclick=()=>fileInput.click();
-fileInput.onchange=e=>loadImage(e.target.files[0]);
+let drop = document.getElementById("drop");
+let fileInput = document.getElementById("file");
+drop.onclick = () => fileInput.click();
+fileInput.onchange = e => loadImage(e.target.files[0]);
 
-function loadImage(file){
-    if(!file)return;
-    let reader=new FileReader();
-    reader.onload=e=>{
-        img.onload=()=>{
-            canvas.width=img.width;
-            canvas.height=img.height;
-            ctx.drawImage(img,0,0);
-            document.getElementById("width").value=img.width;
+// Drag & Drop Support
+drop.ondragover = e => { e.preventDefault(); drop.style.background = '#E0E7FF'; };
+drop.ondragleave = e => drop.style.background = '#F8FAFF';
+drop.ondrop = e => {
+    e.preventDefault();
+    drop.style.background = '#F8FAFF';
+    loadImage(e.dataTransfer.files[0]);
+};
+
+function loadImage(file) {
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = e => {
+        img.onload = () => {
+            originalRatio = img.height / img.width;
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            document.getElementById("width").value = img.width;
+            document.getElementById("height").value = img.height;
         };
-        img.src=e.target.result;
+        img.src = e.target.result;
     };
     reader.readAsDataURL(file);
 }
 
-document.getElementById("width").oninput=function(){
-    if(!img.src) return;
-    let w=this.value;
-    let h=w*(img.height/img.width);
-    canvas.width=w; canvas.height=h;
-    ctx.drawImage(img,0,0,w,h);
+// Live Width & Height Resize
+document.getElementById("width").oninput = function() {
+    if (!img.src) return;
+    let w = parseInt(this.value) || canvas.width;
+    let h = Math.round(w * originalRatio);
+    document.getElementById("height").value = h;
+    resizeCanvas(w, h);
 };
 
-document.getElementById("quality").oninput=function(){
-    document.getElementById("qVal").innerText=Math.round(this.value*100);
+document.getElementById("height").oninput = function() {
+    if (!img.src) return;
+    let h = parseInt(this.value) || canvas.height;
+    let w = Math.round(h / originalRatio);
+    document.getElementById("width").value = w;
+    resizeCanvas(w, h);
 };
 
-function rotate(){
+function resizeCanvas(w, h) {
+    canvas.width = w;
+    canvas.height = h;
+    ctx.drawImage(img, 0, 0, w, h);
+}
+
+document.getElementById("quality").oninput = function() {
+    document.getElementById("qVal").innerText = Math.round(this.value * 100);
+};
+
+function rotate() {
     let w = canvas.width;
     let h = canvas.height;
     let temp = document.createElement("canvas");
     let tctx = temp.getContext("2d");
-    temp.width = h; temp.height = w;
+    temp.width = h;
+    temp.height = w;
     tctx.translate(h/2, w/2);
     tctx.rotate(Math.PI/2);
     tctx.drawImage(canvas, -w/2, -h/2);
-    canvas.width = h; canvas.height = w;
+    
+    canvas.width = h;
+    canvas.height = w;
     ctx.drawImage(temp, 0, 0);
+    
+    // Update dimensions
+    document.getElementById("width").value = canvas.width;
+    document.getElementById("height").value = canvas.height;
+    originalRatio = canvas.height / canvas.width;
 }
 
-function removeBg(){
-    let imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-    let data=imageData.data;
-    for(let i=0;i<data.length;i+=4){
-        if(data[i]>225 && data[i+1]>225 && data[i+2]>225) data[i+3]=0;
+function removeBg() {
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let data = imageData.data;
+    
+    // Better background removal - detects light backgrounds more accurately
+    for (let i = 0; i < data.length; i += 4) {
+        let r = data[i];
+        let g = data[i + 1];
+        let b = data[i + 2];
+        
+        // Detect light colors (near white) - more sensitive threshold
+        let brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+        if (brightness > 220 && r > 200 && g > 200 && b > 200) {
+            data[i + 3] = 0; // Make transparent
+        }
     }
-    ctx.putImageData(imageData,0,0);
+    ctx.putImageData(imageData, 0, 0);
 }
 
-function downloadImg(){
-    let format=document.getElementById("format").value;
-    let quality=parseFloat(document.getElementById("quality").value);
+function downloadImg() {
+    let format = document.getElementById("format").value;
+    let quality = parseFloat(document.getElementById("quality").value);
     let finalCanvas = document.createElement("canvas");
     finalCanvas.width = canvas.width;
     finalCanvas.height = canvas.height;
     let fctx = finalCanvas.getContext("2d");
+    
+    // Fill background first
     fctx.fillStyle = document.getElementById("bgColor").value;
-    fctx.fillRect(0,0,finalCanvas.width, finalCanvas.height);
+    fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
     fctx.drawImage(canvas, 0, 0);
-    let link=document.createElement("a");
-    link.download="hiistudio_pro."+format.split("/")[1];
-    link.href=finalCanvas.toDataURL(format, quality);
+    
+    let link = document.createElement("a");
+    link.download = "hiistudio_pro." + format.split("/")[1];
+    link.href = finalCanvas.toDataURL(format, quality);
     link.click();
 }
 
-function downloadPDF(){
-    const {jsPDF}=window.jspdf;
-    let pdf=new jsPDF(canvas.width > canvas.height ? 'l' : 'p', 'px', [canvas.width, canvas.height]);
-    pdf.addImage(canvas.toDataURL("image/jpeg", 1.0),"JPEG",0,0,canvas.width,canvas.height);
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    let pdf = new jsPDF(canvas.width > canvas.height ? 'l' : 'p', 'px', [canvas.width, canvas.height]);
+    pdf.addImage(canvas.toDataURL("image/jpeg", 1.0), "JPEG", 0, 0, canvas.width, canvas.height);
     pdf.save("hiistudio_export.pdf");
 }
 </script>
